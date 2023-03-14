@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 
 public abstract class IAudioFrameObserver {
   private long engineHandle, nativeHandle;
+  public boolean enableSetPushDirectAudio;
 
   public IAudioFrameObserver(long engineHandle) {
     this.engineHandle = engineHandle;
