@@ -1,7 +1,7 @@
 import 'dart:developer';
 
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
-import 'package:agora_rtc_rawdata/agora_rtc_rawdata.dart';
+import 'package:agora_rtc_rawdata/agora_rtc_rawdata.dart' as RawData;
 import 'package:agora_rtc_rawdata_example/config/agora.config.dart' as config;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -39,6 +39,9 @@ class _MyAppState extends State<MyApp> {
     }
 
     engine = createAgoraRtcEngine();
+
+    RawData.AgoraRtcRawdata.init();
+
     await engine.initialize(RtcEngineContext(
         appId: config.appId,
         channelProfile: ChannelProfileType.channelProfileLiveBroadcasting));
@@ -62,24 +65,52 @@ class _MyAppState extends State<MyApp> {
       });
     }));
     await engine.enableVideo();
+    await engine.enableAudio();
     await engine.startPreview();
     setState(() {
       startPreview = true;
     });
-    var handle = await engine.getNativeHandle();
-    await AgoraRtcRawdata.registerAudioFrameObserver(handle);
-    await AgoraRtcRawdata.registerVideoFrameObserver(handle);
+
+    bool ret = await RawData.AgoraRtcRawdata.getPushDirectAudioEnable();
+    assert(ret == false);
+
+    await RawData.AgoraRtcRawdata.setPushDirectAudioEnable(true);
+    ret = await RawData.AgoraRtcRawdata.getPushDirectAudioEnable();
+    assert(ret == true);
+
+    // await AgoraRtcRawdata.setPushDirectAudioEnable(false);
+    // ret = await AgoraRtcRawdata.getPushDirectAudioEnable();
+    // assert(ret == false);
 
     await engine.joinChannel(
         token: config.token,
         channelId: config.channelId,
         uid: config.uid,
-        options: ChannelMediaOptions());
+        options: ChannelMediaOptions(
+            clientRoleType: ClientRoleType.clientRoleBroadcaster));
+
+    await engine.setRecordingAudioFrameParameters(
+        sampleRate: 48000,
+        channel: 2,
+        mode: RawAudioFrameOpModeType.rawAudioFrameOpModeReadOnly,
+        samplesPerCall: 960);
+
+    var handle = await engine.getNativeHandle();
+    await RawData.AgoraRtcRawdata.registerAudioFrameObserver(handle);
+    await RawData.AgoraRtcRawdata.registerVideoFrameObserver(handle);
+
+    RawData.AudioFrameObserver observer = RawData.AudioFrameObserver(
+      onRecordAudioFrame: (channelId, audioFrame) async {
+        debugPrint('[onRecordAudioFrame] channelId: $channelId, audioFrame:');
+      },
+    );
+
+    RawData.AgoraRtcRawdata.hookAudioFrameObserver(observer);
   }
 
   _deinitEngine() async {
-    await AgoraRtcRawdata.unregisterAudioFrameObserver();
-    await AgoraRtcRawdata.unregisterVideoFrameObserver();
+    await RawData.AgoraRtcRawdata.unregisterAudioFrameObserver();
+    await RawData.AgoraRtcRawdata.unregisterVideoFrameObserver();
     await engine.release();
   }
 

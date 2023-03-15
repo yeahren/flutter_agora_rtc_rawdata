@@ -3,14 +3,14 @@
 //  react-native-agora-rawdata
 //
 //  Created by LXH on 2020/11/10.
-//
+// 
 
 #import "AgoraAudioFrameObserver.h"
 
 #import <AgoraRtcKit/IAgoraMediaEngine.h>
 #import <AgoraRtcKit/IAgoraRtcEngine.h>
 
-namespace agora {
+namespace agora { 
 class AudioFrameObserver : public media::IAudioFrameObserver {
 public:
   AudioFrameObserver(long long engineHandle, void *observer)
@@ -142,6 +142,8 @@ private:
 private:
   void *observer;
   long long engineHandle;
+public:
+  bool enableSetPushDirectAudio = false;
 };
 }
 

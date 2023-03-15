@@ -1,13 +1,19 @@
 package io.agora.rtc.rawdata.base;
 
 import androidx.annotation.NonNull;
+import io.flutter.plugin.common.MethodChannel;
 
 public abstract class IAudioFrameObserver {
   private long engineHandle, nativeHandle;
   public boolean enableSetPushDirectAudio;
+  public MethodChannel channel;
 
-  public IAudioFrameObserver(long engineHandle) {
+  
+
+  public IAudioFrameObserver(long engineHandle, boolean enableSetPushDirectAudio, MethodChannel channel) {
     this.engineHandle = engineHandle;
+    this.enableSetPushDirectAudio = enableSetPushDirectAudio;
+    this.channel = channel;
   }
 
   public abstract boolean onRecordAudioFrame(@NonNull AudioFrame audioFrame);
