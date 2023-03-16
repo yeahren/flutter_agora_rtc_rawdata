@@ -8,6 +8,7 @@ import io.agora.rtc.rawdata.base.VideoFrame
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
+import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
 import java.util.*
@@ -16,20 +17,23 @@ import android.os.Handler
 import android.os.Looper
 
 /** AgoraRtcRawdataPlugin */
-class AgoraRtcRawdataPlugin : FlutterPlugin, MethodCallHandler {
+class AgoraRtcRawdataPlugin : FlutterPlugin, MethodCallHandler, EventChannel.StreamHandler {
   /// The MethodChannel that will the communication between Flutter and native Android
   ///
   /// This local reference serves to register the plugin with the Flutter Engine and unregister it
   /// when the Flutter Engine is detached from the Activity
   private lateinit var channel: MethodChannel
+  private lateinit var event_channel: EventChannel
   private var enableSetPushDirectAudio: Boolean = false;
-
+  private var eventSink: EventChannel.EventSink? = null
   private var audioObserver: IAudioFrameObserver? = null
   private var videoObserver: IVideoFrameObserver? = null
 
   override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
     channel = MethodChannel(flutterPluginBinding.binaryMessenger, "agora_rtc_rawdata")
     channel.setMethodCallHandler(this)
+    event_channel = EventChannel(flutterPluginBinding.binaryMessenger, "agora_rtc_rawdata_events")
+    event_channel.setStreamHandler(this)
   }
 
   override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
@@ -58,8 +62,12 @@ class AgoraRtcRawdataPlugin : FlutterPlugin, MethodCallHandler {
                 //TODO:FUCKME
                 Log.v("Peter", "FUCKME FUCKME FUCKME onRecordAudioFrame 44444")
               }
-
               Handler(Looper.getMainLooper()).post {
+                val hashMap:HashMap<String,Any> = HashMap<String,Any>()
+                hashMap.set("buffer", audioFrame.buffer);
+                hashMap.set("samples", audioFrame.samples);
+                eventSink?.success(hashMap)
+
                 channel.invokeMethod("onRecordAudioFrame_type", audioFrame.type.ordinal);
                 channel.invokeMethod("onRecordAudioFrame_samples", audioFrame.samples);
                 channel.invokeMethod("onRecordAudioFrame_bytesPerSample", audioFrame.bytesPerSample);
@@ -159,5 +167,13 @@ class AgoraRtcRawdataPlugin : FlutterPlugin, MethodCallHandler {
     init {
       System.loadLibrary("cpp")
     }
+  }
+
+  override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
+    eventSink = events
+  }
+
+  override fun onCancel(arguments: Any?) {
+    TODO("Not yet implemented")
   }
 }

@@ -153,7 +153,8 @@ class AgoraRtcRawdata {
 
   static Future<void> registerAudioFrameObserver(int engineHandle) {
     _event_channel.receiveBroadcastStream().listen((event) {
-      //print(event);
+      print("buffer coming in");
+      print(event);
     });
     return _channel.invokeMethod('registerAudioFrameObserver', engineHandle);
   }
