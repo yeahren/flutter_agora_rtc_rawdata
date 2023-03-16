@@ -13,7 +13,10 @@ dependencies:
     sdk: flutter
   flutter_web_plugins:
     sdk: flutter
-  agora_rtc_engine: ^6.1.0
+  agora_rtc_engine:
+    git:  
+      url: https://github.com/AgoraIO/Agora-Flutter-SDK.git    
+      ref: 240563f8ca6eee69421a065b8a5d4ebfd9309002
 
 
 dev_dependencies:

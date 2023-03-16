@@ -116,7 +116,7 @@ public:
   }
 
   bool onEarMonitoringAudioFrame(
-            media::IAudioFrameObserverBase::AudioFrame &audioFrame) override {
+            media::IAudioFrameObserverBase::AudioFrame &audioFrame) {
     return false;
   }
 
@@ -136,7 +136,7 @@ public:
     return media::IAudioFrameObserverBase::AudioParams();
   }
 
-  media::IAudioFrameObserverBase::AudioParams getEarMonitoringAudioParams() override {
+  media::IAudioFrameObserverBase::AudioParams getEarMonitoringAudioParams() {
     return media::IAudioFrameObserverBase::AudioParams();
   }
 
