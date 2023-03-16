@@ -1,11 +1,26 @@
 import Flutter
 import UIKit
 
-public class SwiftAgoraRtcRawdataPlugin: NSObject, FlutterPlugin, AgoraAudioFrameDelegate, AgoraVideoFrameDelegate {
+public class SwiftAgoraRtcRawdataPlugin: NSObject, FlutterPlugin, AgoraAudioFrameDelegate, AgoraVideoFrameDelegate, FlutterStreamHandler {
+    var eventSink: FlutterEventSink?
+    
+    
+    public func onListen(withArguments arguments: Any?, eventSink events: @escaping FlutterEventSink) -> FlutterError? {
+        eventSink = events;
+        return nil;
+    }
+    
+    public func onCancel(withArguments arguments: Any?) -> FlutterError? {
+        return nil;
+    }
+    
     public static func register(with registrar: FlutterPluginRegistrar) {
         let channel = FlutterMethodChannel(name: "agora_rtc_rawdata", binaryMessenger: registrar.messenger())
         let instance = SwiftAgoraRtcRawdataPlugin()
         registrar.addMethodCallDelegate(instance, channel: channel)
+        
+        let event_channel = FlutterEventChannel(name: "agora_rtc_rawdata_events", binaryMessenger: registrar.messenger())
+        event_channel.setStreamHandler(instance)
     }
 
     private var audioObserver: AgoraAudioFrameObserver?
@@ -53,7 +68,7 @@ public class SwiftAgoraRtcRawdataPlugin: NSObject, FlutterPlugin, AgoraAudioFram
         }
     }
 
-    public func onRecord(_: AgoraAudioFrame) -> Bool {
+    public func onRecord(_ frame: AgoraAudioFrame) -> Bool {
         NSLog("Peter onRecordAudioFrame 33333 " + String(enableSetPushDirectAudio))
 
         if(enableSetPushDirectAudio) {
@@ -62,7 +77,14 @@ public class SwiftAgoraRtcRawdataPlugin: NSObject, FlutterPlugin, AgoraAudioFram
 
             return true
         }
-
+        
+        guard let eventSink = eventSink else {return true};
+        let buffer_data = Data(bytesNoCopy: frame.buffer, count: Int(frame.samples * frame.bytesPerSample * frame.channels), deallocator: .none)
+        let map: [String : Any] = [
+            "buffer":FlutterStandardTypedData(bytes: buffer_data),
+            "samples": frame.samples
+        ]
+        eventSink(map)
         return true
     }
 

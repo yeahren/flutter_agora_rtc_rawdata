@@ -6,7 +6,7 @@
 //
 
 #import <Foundation/Foundation.h>
-
+#import <Flutter/Flutter.h>
 #import "AgoraAudioFrame.h"
 
 NS_ASSUME_NONNULL_BEGIN

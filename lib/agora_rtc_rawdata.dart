@@ -97,6 +97,9 @@ class AgoraRtcRawdata {
 
   static const MethodChannel _channel =
       const MethodChannel('agora_rtc_rawdata');
+  static const EventChannel _event_channel =
+      const EventChannel('agora_rtc_rawdata_events');
+
 
   AgoraRtcRawdata.init() {
     _channel.setMethodCallHandler((call) async {
@@ -149,6 +152,9 @@ class AgoraRtcRawdata {
   // }
 
   static Future<void> registerAudioFrameObserver(int engineHandle) {
+    _event_channel.receiveBroadcastStream().listen((event) {
+      //print(event);
+    });
     return _channel.invokeMethod('registerAudioFrameObserver', engineHandle);
   }
 
