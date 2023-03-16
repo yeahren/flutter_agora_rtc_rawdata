@@ -32,7 +32,8 @@ class AgoraRtcRawdataWeb {
       default:
         throw PlatformException(
           code: 'Unimplemented',
-          details: 'agora_rtc_rawdata for web doesn\'t implement \'${call.method}\'',
+          details:
+              'agora_rtc_rawdata for web doesn\'t implement \'${call.method}\'',
         );
     }
   }

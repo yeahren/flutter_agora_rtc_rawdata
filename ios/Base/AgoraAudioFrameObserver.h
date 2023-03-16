@@ -32,8 +32,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface AgoraAudioFrameObserver : NSObject
 @property(nonatomic, assign) NSUInteger engineHandle;
+@property(nonatomic, assign) bool enableSetPushDirectAudio;
 @property(nonatomic, weak) id<AgoraAudioFrameDelegate> _Nullable delegate;
 
+- (instancetype)initWithEngineHandle:(NSUInteger)engineHandle :(bool)enableSetPushDirectAudio;
 - (instancetype)initWithEngineHandle:(NSUInteger)engineHandle;
 
 - (void)registerAudioFrameObserver;

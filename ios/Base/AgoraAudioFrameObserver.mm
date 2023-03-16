@@ -13,8 +13,8 @@
 namespace agora { 
 class AudioFrameObserver : public media::IAudioFrameObserver {
 public:
-  AudioFrameObserver(long long engineHandle, void *observer)
-      : engineHandle(engineHandle), observer(observer) {
+  AudioFrameObserver(long long engineHandle, void *observer, bool enableSetPushDirectAudio)
+      : engineHandle(engineHandle), observer(observer), enableSetPushDirectAudio(enableSetPushDirectAudio) {
     auto rtcEngine = reinterpret_cast<rtc::IRtcEngine *>(engineHandle);
     if (rtcEngine) {
       util::AutoPtr<media::IMediaEngine> mediaEngine;
@@ -43,6 +43,21 @@ public:
 
       AgoraAudioFrameObserver *observerApple =
           (__bridge AgoraAudioFrameObserver *)observer;
+        
+        //--For Fucking Chorus Support--
+        if(enableSetPushDirectAudio) {
+            auto rtcEngine = reinterpret_cast<rtc::IRtcEngine *>(engineHandle);
+            
+            if (rtcEngine) {
+              util::AutoPtr<media::IMediaEngine> mediaEngine;
+              mediaEngine.queryInterface(rtcEngine, agora::rtc::AGORA_IID_MEDIA_ENGINE);
+              if (mediaEngine) {
+                  mediaEngine->pushDirectAudioFrame(&audioFrame);
+              }
+            }
+        }
+        //--
+        
       if (observerApple.delegate != nil &&
           [observerApple.delegate
               respondsToSelector:@selector(onRecordAudioFrame:)]) {
@@ -153,17 +168,22 @@ public:
 
 @implementation AgoraAudioFrameObserver
 
-- (instancetype)initWithEngineHandle:(NSUInteger)engineHandle {
+- (instancetype)initWithEngineHandle:(NSUInteger)engineHandle :(bool)enableSetPushDirectAudio {
   if (self = [super init]) {
     self.engineHandle = engineHandle;
+    self.enableSetPushDirectAudio = enableSetPushDirectAudio;
   }
   return self;
+}
+
+- (instancetype)initWithEngineHandle:(NSUInteger)engineHandle {
+    return [self initWithEngineHandle:engineHandle :false];
 }
 
 - (void)registerAudioFrameObserver {
   if (!_observer) {
     _observer =
-        new agora::AudioFrameObserver(_engineHandle, (__bridge void *)self);
+        new agora::AudioFrameObserver(_engineHandle, (__bridge void *)self, self.enableSetPushDirectAudio);
   }
 }
 

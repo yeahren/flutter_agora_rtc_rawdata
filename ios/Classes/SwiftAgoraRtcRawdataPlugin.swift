@@ -3,13 +3,15 @@ import UIKit
 
 public class SwiftAgoraRtcRawdataPlugin: NSObject, FlutterPlugin, AgoraAudioFrameDelegate, AgoraVideoFrameDelegate {
     public static func register(with registrar: FlutterPluginRegistrar) {
-        let channel = FlutterMethodChannel(name: "agora_rtc_rawdata", binaryMessenger: registrar.messenger())
+        channel = FlutterMethodChannel(name: "agora_rtc_rawdata", binaryMessenger: registrar.messenger())
         let instance = SwiftAgoraRtcRawdataPlugin()
-        registrar.addMethodCallDelegate(instance, channel: channel)
+        registrar.addMethodCallDelegate(instance, channel: channel!)
     }
 
     private var audioObserver: AgoraAudioFrameObserver?
     private var videoObserver: AgoraVideoFrameObserver?
+    
+    static private var channel: FlutterMethodChannel?
 
     private var enableSetPushDirectAudio: Bool = false
 
@@ -22,7 +24,7 @@ public class SwiftAgoraRtcRawdataPlugin: NSObject, FlutterPlugin, AgoraAudioFram
             result(nil)
         case "registerAudioFrameObserver":
             if audioObserver == nil {
-                audioObserver = AgoraAudioFrameObserver(engineHandle: call.arguments as! UInt)
+                audioObserver = AgoraAudioFrameObserver(engineHandle: call.arguments as! UInt, enableSetPushDirectAudio)
             }
             audioObserver?.delegate = self
             audioObserver?.register()
@@ -53,15 +55,22 @@ public class SwiftAgoraRtcRawdataPlugin: NSObject, FlutterPlugin, AgoraAudioFram
         }
     }
 
-    public func onRecord(_: AgoraAudioFrame) -> Bool {
+    public func onRecord(_ frame: AgoraAudioFrame) -> Bool {
         NSLog("Peter onRecordAudioFrame 33333 " + String(enableSetPushDirectAudio))
+        
+        var data = Data(bytes: frame.buffer, count:(Int)(frame.samples * frame.bytesPerSample * frame.channels));
 
-        if(enableSetPushDirectAudio) {
-            //TODO:FUCKME
-            NSLog("Peter onRecordAudioFrame 44444")
-
-            return true
-        }
+        SwiftAgoraRtcRawdataPlugin.channel?.invokeMethod("onRecordAudioFrame_type", arguments: frame.avsync_type)
+        SwiftAgoraRtcRawdataPlugin.channel?.invokeMethod("onRecordAudioFrame_samples", arguments: frame.samples)
+        SwiftAgoraRtcRawdataPlugin.channel?.invokeMethod("onRecordAudioFrame_bytesPerSample", arguments: frame.bytesPerSample)
+        SwiftAgoraRtcRawdataPlugin.channel?.invokeMethod("onRecordAudioFrame_channels", arguments: frame.channels)
+        SwiftAgoraRtcRawdataPlugin.channel?.invokeMethod("onRecordAudioFrame_samplesPerSec", arguments: frame.samplesPerSec)
+        SwiftAgoraRtcRawdataPlugin.channel?.invokeMethod("onRecordAudioFrame_buffer", arguments: data)
+        SwiftAgoraRtcRawdataPlugin.channel?.invokeMethod("onRecordAudioFrame_renderTimeMs", arguments: frame.renderTimeMs)
+        SwiftAgoraRtcRawdataPlugin.channel?.invokeMethod("onRecordAudioFrame_avsync_type", arguments: frame.avsync_type)
+        
+        SwiftAgoraRtcRawdataPlugin.channel?.invokeMethod("onRecordAudioFrame", arguments: nil);
+        
 
         return true
     }
