@@ -104,7 +104,7 @@ class AgoraRtcRawdata {
         case "onRecordAudioFrame":
           String uid = "0";
           if (AgoraRtcRawdata.audioFrameObserver != null) {
-            debugPrint('FUCKME 77777');
+            //debugPrint('FUCKME 77777');
             AgoraRtcRawdata.audioFrameObserver?.onRecordAudioFrame!(
                 uid, audioFrame);
           }

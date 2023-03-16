@@ -101,7 +101,8 @@ class _MyAppState extends State<MyApp> {
 
     RawData.AudioFrameObserver observer = RawData.AudioFrameObserver(
       onRecordAudioFrame: (channelId, audioFrame) async {
-        debugPrint('[onRecordAudioFrame] channelId: $channelId, audioFrame:');
+        debugPrint(
+            '[onRecordAudioFrame] channelId: $channelId, audioFrame:$audioFrame');
       },
     );
 
