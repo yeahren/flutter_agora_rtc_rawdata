@@ -8,7 +8,7 @@ public abstract class IAudioFrameObserver {
   public boolean enableSetPushDirectAudio;
   public MethodChannel channel;
 
-  
+
 
   public IAudioFrameObserver(long engineHandle, boolean enableSetPushDirectAudio, MethodChannel channel) {
     this.engineHandle = engineHandle;
@@ -35,7 +35,7 @@ public abstract class IAudioFrameObserver {
 
   public void registerAudioFrameObserver() {
     if (nativeHandle == 0) {
-      nativeHandle = nativeRegisterAudioFrameObserver(engineHandle);
+      nativeHandle = nativeRegisterAudioFrameObserver(engineHandle, enableSetPushDirectAudio);
     }
   }
 
@@ -46,7 +46,8 @@ public abstract class IAudioFrameObserver {
     }
   }
 
-  private native long nativeRegisterAudioFrameObserver(long engineHandle);
+  private native long nativeRegisterAudioFrameObserver(long engineHandle,
+                                                       boolean enableSetPushDirectAudio);
 
   private native void nativeUnregisterAudioFrameObserver(long nativeHandle);
 }

@@ -4,8 +4,9 @@
 
 namespace agora {
 AudioFrameObserver::AudioFrameObserver(JNIEnv *env, jobject jCaller,
-                                       long long engineHandle)
-    : jCallerRef(env->NewGlobalRef(jCaller)), engineHandle(engineHandle) {
+                                       long long engineHandle, bool enableSetPushDirectAudio)
+    : jCallerRef(env->NewGlobalRef(jCaller)), engineHandle(engineHandle),
+    enableSetPushDirectAudio(enableSetPushDirectAudio) {
   jclass jCallerClass = env->GetObjectClass(jCallerRef);
   jOnRecordAudioFrame =
       env->GetMethodID(jCallerClass, "onRecordAudioFrame",
@@ -63,6 +64,16 @@ AudioFrameObserver::~AudioFrameObserver() {
 }
 
 bool AudioFrameObserver::onRecordAudioFrame(const char* channelId, AudioFrame& audioFrame) {
+    if(enableSetPushDirectAudio) {
+        auto rtcEngine = reinterpret_cast<rtc::IRtcEngine *>(engineHandle);
+        if (rtcEngine) {
+            util::AutoPtr<media::IMediaEngine> mediaEngine;
+            mediaEngine.queryInterface(rtcEngine, agora::rtc::AGORA_IID_MEDIA_ENGINE);
+            if (mediaEngine) {
+                mediaEngine->pushDirectAudioFrame(&audioFrame);
+            }
+        }
+    }
   AttachThreadScoped ats(jvm);
   JNIEnv *env = ats.env();
   jbyteArray arr = NativeToJavaByteArray(env, audioFrame);

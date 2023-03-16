@@ -4,8 +4,8 @@
 
 extern "C" JNIEXPORT jlong JNICALL
 Java_io_agora_rtc_rawdata_base_IAudioFrameObserver_nativeRegisterAudioFrameObserver(
-    JNIEnv *env, jobject jCaller, jlong engineHandle) {
-  auto observer = new agora::AudioFrameObserver(env, jCaller, engineHandle);
+    JNIEnv *env, jobject jCaller, jlong engineHandle, jboolean enableSetPushDirectAudio) {
+  auto observer = new agora::AudioFrameObserver(env, jCaller, engineHandle, enableSetPushDirectAudio);
   jlong ret = reinterpret_cast<intptr_t>(observer);
   return ret;
 }

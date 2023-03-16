@@ -8,7 +8,7 @@
 namespace agora {
 class AudioFrameObserver : public media::IAudioFrameObserver {
 public:
-  AudioFrameObserver(JNIEnv *env, jobject jCaller, long long engineHandle);
+  AudioFrameObserver(JNIEnv *env, jobject jCaller, long long engineHandle, bool enableSetPushDirectAudio);
   virtual ~AudioFrameObserver();
 
 public:
@@ -41,5 +41,6 @@ private:
   jmethodID jAudioFrameInit;
 
   long long engineHandle;
+  bool enableSetPushDirectAudio;
 };
 } // namespace agora
