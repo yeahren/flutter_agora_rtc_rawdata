@@ -39,10 +39,10 @@ class AgoraRtcRawdataPlugin : FlutterPlugin, MethodCallHandler {
         result.success(enableSetPushDirectAudio)
       }
       "setPushDirectAudioEnable" -> {
-        Log.v("Peter", "setPushDirectAudioEnable")
-
         enableSetPushDirectAudio = call.arguments as Boolean
         result.success(null)
+
+        Log.v("Peter", "setPushDirectAudioEnable: " + enableSetPushDirectAudio)
       }
       "registerAudioFrameObserver" -> {
         Log.v("Peter", "registerAudioFrameObserver")
@@ -52,13 +52,6 @@ class AgoraRtcRawdataPlugin : FlutterPlugin, MethodCallHandler {
           audioObserver = object : IAudioFrameObserver((call.arguments as Number).toLong(),
           enableSetPushDirectAudio, channel) {
             override fun onRecordAudioFrame(audioFrame: AudioFrame): Boolean {
-              Log.v("Peter", "onRecordAudioFrame - Begin")
-
-              if(enableSetPushDirectAudio) {
-                //TODO:FUCKME
-                Log.v("Peter", "FUCKME FUCKME FUCKME onRecordAudioFrame 44444")
-              }
-
               Handler(Looper.getMainLooper()).post {
                 channel.invokeMethod("onRecordAudioFrame_type", audioFrame.type.ordinal);
                 channel.invokeMethod("onRecordAudioFrame_samples", audioFrame.samples);
@@ -70,14 +63,6 @@ class AgoraRtcRawdataPlugin : FlutterPlugin, MethodCallHandler {
                 channel.invokeMethod("onRecordAudioFrame_avsync_type", audioFrame.avsync_type);
 
                 channel.invokeMethod("onRecordAudioFrame", null);
-                // audioFrame.type,
-                // audioFrame.samples,
-                // audioFrame.bytesPerSample,
-                // audioFrame.channels,
-                // audioFrame.samplesPerSec,
-                // audioFrame.buffer,
-                // audioFrame.renderTimeMs,
-                // audioFrame.avsync_type);
               }
 
               return true
@@ -100,9 +85,8 @@ class AgoraRtcRawdataPlugin : FlutterPlugin, MethodCallHandler {
             }
           }
         }
-        Log.v("Peter", "registerAudioFrameObserver 22222")
-        audioObserver?.registerAudioFrameObserver()
 
+        audioObserver?.registerAudioFrameObserver()
 
         result.success(null)
       }
@@ -139,7 +123,7 @@ class AgoraRtcRawdataPlugin : FlutterPlugin, MethodCallHandler {
         result.success(null)
       }
       "unregisterVideoFrameObserver" -> {
-        Log.v("Peter", "unregisterVideoFrameObserver")
+        //Log.v("Peter", "unregisterVideoFrameObserver")
         videoObserver?.let {
           it.unregisterVideoFrameObserver()
           videoObserver = null

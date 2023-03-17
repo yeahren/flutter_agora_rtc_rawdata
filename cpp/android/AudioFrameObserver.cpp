@@ -1,6 +1,7 @@
 #include "AudioFrameObserver.h"
-
 #include "VMUtil.h"
+
+#include <android/log.h>
 
 namespace agora {
 AudioFrameObserver::AudioFrameObserver(JNIEnv *env, jobject jCaller,
@@ -37,6 +38,7 @@ AudioFrameObserver::AudioFrameObserver(JNIEnv *env, jobject jCaller,
     mediaEngine.queryInterface(rtcEngine, agora::rtc::AGORA_IID_MEDIA_ENGINE);
     if (mediaEngine) {
       mediaEngine->registerAudioFrameObserver(this);
+      mediaEngine->setDirectExternalAudioSource(true);
     }
   }
 }
@@ -64,13 +66,18 @@ AudioFrameObserver::~AudioFrameObserver() {
 }
 
 bool AudioFrameObserver::onRecordAudioFrame(const char* channelId, AudioFrame& audioFrame) {
+    __android_log_print(ANDROID_LOG_INFO, "Peter",
+                        "onRecordAudioFrame - enableSetPushDirectAudio - ret: %d",
+                        enableSetPushDirectAudio);
+
     if(enableSetPushDirectAudio) {
         auto rtcEngine = reinterpret_cast<rtc::IRtcEngine *>(engineHandle);
         if (rtcEngine) {
             util::AutoPtr<media::IMediaEngine> mediaEngine;
             mediaEngine.queryInterface(rtcEngine, agora::rtc::AGORA_IID_MEDIA_ENGINE);
             if (mediaEngine) {
-                mediaEngine->pushDirectAudioFrame(&audioFrame);
+                auto ret = mediaEngine->pushDirectAudioFrame(&audioFrame);
+                __android_log_print(ANDROID_LOG_INFO, "Peter", "mediaEngine->pushDirectAudioFrame - ret: %d", ret);
             }
         }
     }

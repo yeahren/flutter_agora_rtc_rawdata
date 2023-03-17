@@ -10,6 +10,8 @@ add_library(cpp
         cpp-adapter.cpp
         )
 
+target_link_libraries(cpp log)
+
 # Specifies a path to native header files.
 include_directories(
         ../cpp/android
