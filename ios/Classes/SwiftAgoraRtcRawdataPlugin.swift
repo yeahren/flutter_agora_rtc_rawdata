@@ -34,7 +34,6 @@ public class SwiftAgoraRtcRawdataPlugin: NSObject, FlutterPlugin, AgoraAudioFram
             if audioObserver != nil {
                 audioObserver?.delegate = nil
                 audioObserver?.unregisterAudioFrameObserver()
-                audioObserver = nil
             }
             result(nil)
         case "registerVideoFrameObserver":

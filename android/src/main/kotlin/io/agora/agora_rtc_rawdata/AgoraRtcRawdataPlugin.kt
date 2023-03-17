@@ -90,7 +90,7 @@ class AgoraRtcRawdataPlugin : FlutterPlugin, MethodCallHandler {
 
         result.success(null)
       }
-      "unhookAudioFrameObserver" -> {
+      "unregisterAudioFrameObserver" -> {
         //Log.v("Peter", "unhookAudioFrameObserver")
         audioObserver?.let {
           it.unregisterAudioFrameObserver()

@@ -13,6 +13,9 @@ public:
 
   void setEnableSetPushDirectAudio(bool enable);
 
+  void registerAudioFrameObserver();
+  void unregisterAudioFrameObserver();
+
 public:
     bool onRecordAudioFrame(const char* channelId, AudioFrame& audioFrame) override;
     bool onPlaybackAudioFrame(const char* channelId, AudioFrame& audioFrame) override;
@@ -44,7 +47,9 @@ private:
 
   long long engineHandle;
 
+  util::AutoPtr<media::IMediaEngine> _mediaEngine;
+
 public:
-  std::atomic<bool> enableSetPushDirectAudio;
+  bool enableSetPushDirectAudio;
 };
 } // namespace agora

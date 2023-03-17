@@ -4,163 +4,166 @@
 #include <android/log.h>
 
 namespace agora {
-AudioFrameObserver::AudioFrameObserver(JNIEnv *env, jobject jCaller,
-                                       long long engineHandle, bool enableSetPushDirectAudio)
-    : jCallerRef(env->NewGlobalRef(jCaller)), engineHandle(engineHandle),
-    enableSetPushDirectAudio(enableSetPushDirectAudio) {
-  jclass jCallerClass = env->GetObjectClass(jCallerRef);
-  jOnRecordAudioFrame =
-      env->GetMethodID(jCallerClass, "onRecordAudioFrame",
-                       "(Lio/agora/rtc/rawdata/base/AudioFrame;)Z");
-  jOnPlaybackAudioFrame =
-      env->GetMethodID(jCallerClass, "onPlaybackAudioFrame",
-                       "(Lio/agora/rtc/rawdata/base/AudioFrame;)Z");
-  jOnMixedAudioFrame =
-      env->GetMethodID(jCallerClass, "onMixedAudioFrame",
-                       "(Lio/agora/rtc/rawdata/base/AudioFrame;)Z");
-  jOnPlaybackAudioFrameBeforeMixing =
-      env->GetMethodID(jCallerClass, "onPlaybackAudioFrameBeforeMixing",
-                       "(ILio/agora/rtc/rawdata/base/AudioFrame;)Z");
+    AudioFrameObserver::AudioFrameObserver(JNIEnv *env, jobject jCaller,
+                                           long long engineHandle,
+                                           bool enableSetPushDirectAudio)
+            : jCallerRef(env->NewGlobalRef(jCaller)), engineHandle(engineHandle),
+              enableSetPushDirectAudio(enableSetPushDirectAudio) {
+        jclass jCallerClass = env->GetObjectClass(jCallerRef);
+        jOnRecordAudioFrame =
+                env->GetMethodID(jCallerClass, "onRecordAudioFrame",
+                                 "(Lio/agora/rtc/rawdata/base/AudioFrame;)Z");
+        jOnPlaybackAudioFrame =
+                env->GetMethodID(jCallerClass, "onPlaybackAudioFrame",
+                                 "(Lio/agora/rtc/rawdata/base/AudioFrame;)Z");
+        jOnMixedAudioFrame =
+                env->GetMethodID(jCallerClass, "onMixedAudioFrame",
+                                 "(Lio/agora/rtc/rawdata/base/AudioFrame;)Z");
+        jOnPlaybackAudioFrameBeforeMixing =
+                env->GetMethodID(jCallerClass, "onPlaybackAudioFrameBeforeMixing",
+                                 "(ILio/agora/rtc/rawdata/base/AudioFrame;)Z");
 
-  env->DeleteLocalRef(jCallerClass);
+        env->DeleteLocalRef(jCallerClass);
 
-  jclass jAudioFrame = env->FindClass("io/agora/rtc/rawdata/base/AudioFrame");
-  jAudioFrameClass = (jclass)env->NewGlobalRef(jAudioFrame);
-  jAudioFrameInit =
-      env->GetMethodID(jAudioFrameClass, "<init>", "(IIIII[BJI)V");
-  env->DeleteLocalRef(jAudioFrame);
+        jclass jAudioFrame = env->FindClass("io/agora/rtc/rawdata/base/AudioFrame");
+        jAudioFrameClass = (jclass) env->NewGlobalRef(jAudioFrame);
+        jAudioFrameInit =
+                env->GetMethodID(jAudioFrameClass, "<init>", "(IIIII[BJI)V");
+        env->DeleteLocalRef(jAudioFrame);
 
-  env->GetJavaVM(&jvm);
-
-  auto rtcEngine = reinterpret_cast<rtc::IRtcEngine *>(engineHandle);
-  if (rtcEngine) {
-    util::AutoPtr<media::IMediaEngine> mediaEngine;
-    mediaEngine.queryInterface(rtcEngine, agora::rtc::AGORA_IID_MEDIA_ENGINE);
-    if (mediaEngine) {
-      mediaEngine->registerAudioFrameObserver(this);
-      mediaEngine->setDirectExternalAudioSource(true);
+        env->GetJavaVM(&jvm);
     }
-  }
-}
 
-AudioFrameObserver::~AudioFrameObserver() {
-  auto rtcEngine = reinterpret_cast<rtc::IRtcEngine *>(engineHandle);
-  if (rtcEngine) {
-    util::AutoPtr<media::IMediaEngine> mediaEngine;
-    mediaEngine.queryInterface(rtcEngine, agora::rtc::AGORA_IID_MEDIA_ENGINE);
-    if (mediaEngine) {
-      mediaEngine->registerAudioFrameObserver(this);
+    AudioFrameObserver::~AudioFrameObserver() {
+        unregisterAudioFrameObserver();
+
+        AttachThreadScoped ats(jvm);
+
+        ats.env()->DeleteGlobalRef(jCallerRef);
+        jOnRecordAudioFrame = nullptr;
+        jOnPlaybackAudioFrame = nullptr;
+        jOnMixedAudioFrame = nullptr;
+        jOnPlaybackAudioFrameBeforeMixing = nullptr;
+
+        ats.env()->DeleteGlobalRef(jAudioFrameClass);
+        jAudioFrameInit = nullptr;
     }
-  }
 
-  AttachThreadScoped ats(jvm);
+    void AudioFrameObserver::setEnableSetPushDirectAudio(bool enable) {
+        this->enableSetPushDirectAudio = enable;
+    }
 
-  ats.env()->DeleteGlobalRef(jCallerRef);
-  jOnRecordAudioFrame = nullptr;
-  jOnPlaybackAudioFrame = nullptr;
-  jOnMixedAudioFrame = nullptr;
-  jOnPlaybackAudioFrameBeforeMixing = nullptr;
+    void AudioFrameObserver::registerAudioFrameObserver() {
+        auto rtcEngine = reinterpret_cast<rtc::IRtcEngine *>(engineHandle);
+        if (rtcEngine) {
+            _mediaEngine.queryInterface(rtcEngine, agora::rtc::AGORA_IID_MEDIA_ENGINE);
+            if (_mediaEngine) {
+                _mediaEngine->setDirectExternalAudioSource(true);
+                _mediaEngine->registerAudioFrameObserver(this);
+            }
+        }
+    }
 
-  ats.env()->DeleteGlobalRef(jAudioFrameClass);
-  jAudioFrameInit = nullptr;
-}
+    void AudioFrameObserver::unregisterAudioFrameObserver() {
+        auto rtcEngine = reinterpret_cast<rtc::IRtcEngine *>(engineHandle);
+        if (rtcEngine) {
+            _mediaEngine.queryInterface(rtcEngine, agora::rtc::AGORA_IID_MEDIA_ENGINE);
+            if (_mediaEngine) {
+                _mediaEngine->setDirectExternalAudioSource(false);
+                _mediaEngine->registerAudioFrameObserver(nullptr);
+            }
+        }
+    }
 
-void AudioFrameObserver::setEnableSetPushDirectAudio(bool enable) {
-  this->enableSetPushDirectAudio = enable;
-}
-
-bool AudioFrameObserver::onRecordAudioFrame(const char* channelId, AudioFrame& audioFrame) {
+    bool AudioFrameObserver::onRecordAudioFrame(const char *channelId, AudioFrame &audioFrame) {
 //    __android_log_print(ANDROID_LOG_INFO, "Peter",
 //                        "onRecordAudioFrame - enableSetPushDirectAudio - ret: %d",
 //                        bool(enableSetPushDirectAudio));
 
-    if(enableSetPushDirectAudio) {
-        auto rtcEngine = reinterpret_cast<rtc::IRtcEngine *>(engineHandle);
-        if (rtcEngine) {
-            util::AutoPtr<media::IMediaEngine> mediaEngine;
-            mediaEngine.queryInterface(rtcEngine, agora::rtc::AGORA_IID_MEDIA_ENGINE);
-            if (mediaEngine) {
-                auto ret = mediaEngine->pushDirectAudioFrame(&audioFrame);
-                //__android_log_print(ANDROID_LOG_INFO, "Peter", "mediaEngine->pushDirectAudioFrame - ret: %d", ret);
+        if (enableSetPushDirectAudio) {
+            auto rtcEngine = reinterpret_cast<rtc::IRtcEngine *>(engineHandle);
+            if (rtcEngine && _mediaEngine) {
+                auto ret = _mediaEngine->pushDirectAudioFrame(&audioFrame);
+//                __android_log_print(ANDROID_LOG_INFO, "Peter",
+//                                    "mediaEngine->pushDirectAudioFrame - ret: %d", ret);
             }
         }
+        AttachThreadScoped ats(jvm);
+        JNIEnv *env = ats.env();
+        jbyteArray arr = NativeToJavaByteArray(env, audioFrame);
+        jobject obj = NativeToJavaAudioFrame(env, audioFrame, arr);
+        jboolean ret = env->CallBooleanMethod(jCallerRef, jOnRecordAudioFrame, obj);
+        env->GetByteArrayRegion(arr, 0, env->GetArrayLength(arr),
+                                static_cast<jbyte *>(audioFrame.buffer));
+        env->DeleteLocalRef(arr);
+        env->DeleteLocalRef(obj);
+        return ret;
     }
-  AttachThreadScoped ats(jvm);
-  JNIEnv *env = ats.env();
-  jbyteArray arr = NativeToJavaByteArray(env, audioFrame);
-  jobject obj = NativeToJavaAudioFrame(env, audioFrame, arr);
-  jboolean ret = env->CallBooleanMethod(jCallerRef, jOnRecordAudioFrame, obj);
-  env->GetByteArrayRegion(arr, 0, env->GetArrayLength(arr),
-                          static_cast<jbyte *>(audioFrame.buffer));
-  env->DeleteLocalRef(arr);
-  env->DeleteLocalRef(obj);
-  return ret;
-}
 
-bool AudioFrameObserver::onPlaybackAudioFrame(const char* channelId, AudioFrame& audioFrame) {
-  AttachThreadScoped ats(jvm);
-  JNIEnv *env = ats.env();
-  jbyteArray arr = NativeToJavaByteArray(env, audioFrame);
-  jobject obj = NativeToJavaAudioFrame(env, audioFrame, arr);
-  jboolean ret = env->CallBooleanMethod(jCallerRef, jOnPlaybackAudioFrame, obj);
-  env->GetByteArrayRegion(arr, 0, env->GetArrayLength(arr),
-                          static_cast<jbyte *>(audioFrame.buffer));
-  env->DeleteLocalRef(arr);
-  env->DeleteLocalRef(obj);
-  return ret;
-}
+    bool AudioFrameObserver::onPlaybackAudioFrame(const char *channelId, AudioFrame &audioFrame) {
+        AttachThreadScoped ats(jvm);
+        JNIEnv *env = ats.env();
+        jbyteArray arr = NativeToJavaByteArray(env, audioFrame);
+        jobject obj = NativeToJavaAudioFrame(env, audioFrame, arr);
+        jboolean ret = env->CallBooleanMethod(jCallerRef, jOnPlaybackAudioFrame, obj);
+        env->GetByteArrayRegion(arr, 0, env->GetArrayLength(arr),
+                                static_cast<jbyte *>(audioFrame.buffer));
+        env->DeleteLocalRef(arr);
+        env->DeleteLocalRef(obj);
+        return ret;
+    }
 
-bool AudioFrameObserver::onMixedAudioFrame(const char* channelId, AudioFrame& audioFrame) {
-  AttachThreadScoped ats(jvm);
-  JNIEnv *env = ats.env();
-  jbyteArray arr = NativeToJavaByteArray(env, audioFrame);
-  jobject obj = NativeToJavaAudioFrame(env, audioFrame, arr);
-  jboolean ret = env->CallBooleanMethod(jCallerRef, jOnMixedAudioFrame, obj);
-  env->GetByteArrayRegion(arr, 0, env->GetArrayLength(arr),
-                          static_cast<jbyte *>(audioFrame.buffer));
-  env->DeleteLocalRef(arr);
-  env->DeleteLocalRef(obj);
-  return ret;
-}
+    bool AudioFrameObserver::onMixedAudioFrame(const char *channelId, AudioFrame &audioFrame) {
+        AttachThreadScoped ats(jvm);
+        JNIEnv *env = ats.env();
+        jbyteArray arr = NativeToJavaByteArray(env, audioFrame);
+        jobject obj = NativeToJavaAudioFrame(env, audioFrame, arr);
+        jboolean ret = env->CallBooleanMethod(jCallerRef, jOnMixedAudioFrame, obj);
+        env->GetByteArrayRegion(arr, 0, env->GetArrayLength(arr),
+                                static_cast<jbyte *>(audioFrame.buffer));
+        env->DeleteLocalRef(arr);
+        env->DeleteLocalRef(obj);
+        return ret;
+    }
 
-bool AudioFrameObserver::onPlaybackAudioFrameBeforeMixing(
-        const char* channelId, rtc::uid_t uid, AudioFrame& audioFrame) {
-  AttachThreadScoped ats(jvm);
-  JNIEnv *env = ats.env();
-  jbyteArray arr = NativeToJavaByteArray(env, audioFrame);
-  jobject obj = NativeToJavaAudioFrame(env, audioFrame, arr);
-  jboolean ret = env->CallBooleanMethod(
-      jCallerRef, jOnPlaybackAudioFrameBeforeMixing, uid, obj);
-  env->GetByteArrayRegion(arr, 0, env->GetArrayLength(arr),
-                          static_cast<jbyte *>(audioFrame.buffer));
-  env->DeleteLocalRef(arr);
-  env->DeleteLocalRef(obj);
-  return ret;
-}
+    bool AudioFrameObserver::onPlaybackAudioFrameBeforeMixing(
+            const char *channelId, rtc::uid_t uid, AudioFrame &audioFrame) {
+        AttachThreadScoped ats(jvm);
+        JNIEnv *env = ats.env();
+        jbyteArray arr = NativeToJavaByteArray(env, audioFrame);
+        jobject obj = NativeToJavaAudioFrame(env, audioFrame, arr);
+        jboolean ret = env->CallBooleanMethod(
+                jCallerRef, jOnPlaybackAudioFrameBeforeMixing, uid, obj);
+        env->GetByteArrayRegion(arr, 0, env->GetArrayLength(arr),
+                                static_cast<jbyte *>(audioFrame.buffer));
+        env->DeleteLocalRef(arr);
+        env->DeleteLocalRef(obj);
+        return ret;
+    }
 
-jbyteArray AudioFrameObserver::NativeToJavaByteArray(JNIEnv *env,
-                                                     AudioFrame &audioFrame) {
-  int length =
-      audioFrame.samplesPerChannel * audioFrame.channels * audioFrame.bytesPerSample;
+    jbyteArray AudioFrameObserver::NativeToJavaByteArray(JNIEnv *env,
+                                                         AudioFrame &audioFrame) {
+        int length =
+                audioFrame.samplesPerChannel * audioFrame.channels * audioFrame.bytesPerSample;
 
-  jbyteArray jByteArray = env->NewByteArray(length);
+        jbyteArray jByteArray = env->NewByteArray(length);
 
-  if (audioFrame.buffer) {
-    env->SetByteArrayRegion(jByteArray, 0, length,
-                            static_cast<const jbyte *>(audioFrame.buffer));
-  }
-  return jByteArray;
-}
+        if (audioFrame.buffer) {
+            env->SetByteArrayRegion(jByteArray, 0, length,
+                                    static_cast<const jbyte *>(audioFrame.buffer));
+        }
+        return jByteArray;
+    }
 
-jobject AudioFrameObserver::NativeToJavaAudioFrame(JNIEnv *env,
-                                                   AudioFrame &audioFrame,
-                                                   jbyteArray jByteArray) {
-  return env->NewObject(jAudioFrameClass, jAudioFrameInit, (int)audioFrame.type,
-                        audioFrame.samplesPerChannel, (int)audioFrame.bytesPerSample,
-                        audioFrame.channels, audioFrame.samplesPerSec,
-                        jByteArray, audioFrame.renderTimeMs,
-                        audioFrame.avsync_type);
-}
+    jobject AudioFrameObserver::NativeToJavaAudioFrame(JNIEnv *env,
+                                                       AudioFrame &audioFrame,
+                                                       jbyteArray jByteArray) {
+        return env->NewObject(jAudioFrameClass, jAudioFrameInit, (int) audioFrame.type,
+                              audioFrame.samplesPerChannel, (int) audioFrame.bytesPerSample,
+                              audioFrame.channels, audioFrame.samplesPerSec,
+                              jByteArray, audioFrame.renderTimeMs,
+                              audioFrame.avsync_type);
+    }
 
     bool AudioFrameObserver::onEarMonitoringAudioFrame(
             media::IAudioFrameObserverBase::AudioFrame &audioFrame) {
@@ -186,4 +189,6 @@ jobject AudioFrameObserver::NativeToJavaAudioFrame(JNIEnv *env,
     media::IAudioFrameObserverBase::AudioParams AudioFrameObserver::getEarMonitoringAudioParams() {
         return media::IAudioFrameObserverBase::AudioParams();
     }
+
+
 } // namespace agora

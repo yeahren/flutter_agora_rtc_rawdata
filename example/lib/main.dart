@@ -1,4 +1,5 @@
 import 'dart:developer';
+import 'dart:io';
 
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:agora_rtc_rawdata/agora_rtc_rawdata.dart' as RawData;
@@ -94,19 +95,31 @@ class _MyAppState extends State<MyApp> {
         mode: RawAudioFrameOpModeType.rawAudioFrameOpModeReadOnly,
         samplesPerCall: 960);
 
-    var handle = await engine.getNativeHandle();
-    await RawData.AgoraRtcRawdata.registerAudioFrameObserver(handle);
+    for (var i = 0; i < 100; ++i) {
+      debugPrint('Peter-Peter-Peter $i');
+      var handle = await engine.getNativeHandle();
+      await RawData.AgoraRtcRawdata.registerAudioFrameObserver(handle);
 
-    RawData.AudioFrameObserver observer = RawData.AudioFrameObserver(
-      onRecordAudioFrame: (channelId, audioFrame) async {
-        debugPrint(
-            '[onRecordAudioFrame] channelId: $channelId, audioFrame:$audioFrame');
-      },
-    );
+      RawData.AudioFrameObserver observer = RawData.AudioFrameObserver(
+        onRecordAudioFrame: (channelId, audioFrame) async {
+          debugPrint(
+              '[onRecordAudioFrame] channelId: $channelId, audioFrame:$audioFrame');
+        },
+      );
 
-    RawData.AgoraRtcRawdata.hookAudioFrameObserver(observer);
+      RawData.AgoraRtcRawdata.hookAudioFrameObserver(observer);
 
-    await RawData.AgoraRtcRawdata.setPushDirectAudioEnable(true);
+      await RawData.AgoraRtcRawdata.setPushDirectAudioEnable(true);
+
+      sleep(Duration(seconds: 1));
+
+      await RawData.AgoraRtcRawdata.setPushDirectAudioEnable(false);
+
+      sleep(Duration(seconds: 1));
+
+      await RawData.AgoraRtcRawdata.unregisterAudioFrameObserver();
+      RawData.AgoraRtcRawdata.unhookAudioFrameObserver();
+    }
   }
 
   _deinitEngine() async {
