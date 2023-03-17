@@ -144,9 +144,9 @@ class AgoraRtcRawdata {
     AgoraRtcRawdata.audioFrameObserver = observer;
   }
 
-  // static void unregisterAudioFrameObserver(AudioFrameObserver observer) {
-  //   AgoraRtcRawdata.audioFrameObserver = null;
-  // }
+  static void unhookAudioFrameObserver() {
+    AgoraRtcRawdata.audioFrameObserver = null;
+  }
 
   static Future<void> registerAudioFrameObserver(int engineHandle) {
     return _channel.invokeMethod('registerAudioFrameObserver', engineHandle);

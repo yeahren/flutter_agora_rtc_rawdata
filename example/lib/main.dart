@@ -47,7 +47,9 @@ class _MyAppState extends State<MyApp> {
         channelProfile: ChannelProfileType.channelProfileLiveBroadcasting));
 
     engine.registerEventHandler(RtcEngineEventHandler(
-        onJoinChannelSuccess: (RtcConnection connection, int elapsed) {
+        onLocalAudioStats: (connection, stats) {
+      log('onLocalAudioStats connection: ${connection.toJson()} elapsed: $stats');
+    }, onJoinChannelSuccess: (RtcConnection connection, int elapsed) {
       log('onJoinChannelSuccess connection: ${connection.toJson()} elapsed: $elapsed');
       setState(() {
         isJoined = true;
@@ -71,11 +73,8 @@ class _MyAppState extends State<MyApp> {
       startPreview = true;
     });
 
-    bool ret = await RawData.AgoraRtcRawdata.getPushDirectAudioEnable();
-    assert(ret == false);
-
     await RawData.AgoraRtcRawdata.setPushDirectAudioEnable(true);
-    ret = await RawData.AgoraRtcRawdata.getPushDirectAudioEnable();
+    final ret = await RawData.AgoraRtcRawdata.getPushDirectAudioEnable();
     assert(ret == true);
 
     // await AgoraRtcRawdata.setPushDirectAudioEnable(false);
@@ -97,7 +96,6 @@ class _MyAppState extends State<MyApp> {
 
     var handle = await engine.getNativeHandle();
     await RawData.AgoraRtcRawdata.registerAudioFrameObserver(handle);
-    await RawData.AgoraRtcRawdata.registerVideoFrameObserver(handle);
 
     RawData.AudioFrameObserver observer = RawData.AudioFrameObserver(
       onRecordAudioFrame: (channelId, audioFrame) async {
@@ -111,7 +109,7 @@ class _MyAppState extends State<MyApp> {
 
   _deinitEngine() async {
     await RawData.AgoraRtcRawdata.unregisterAudioFrameObserver();
-    await RawData.AgoraRtcRawdata.unregisterVideoFrameObserver();
+    RawData.AgoraRtcRawdata.unhookAudioFrameObserver();
     await engine.release();
   }
 
