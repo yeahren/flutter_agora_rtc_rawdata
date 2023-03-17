@@ -65,10 +65,14 @@ AudioFrameObserver::~AudioFrameObserver() {
   jAudioFrameInit = nullptr;
 }
 
+void AudioFrameObserver::setEnableSetPushDirectAudio(bool enable) {
+  this->enableSetPushDirectAudio = enable;
+}
+
 bool AudioFrameObserver::onRecordAudioFrame(const char* channelId, AudioFrame& audioFrame) {
     __android_log_print(ANDROID_LOG_INFO, "Peter",
                         "onRecordAudioFrame - enableSetPushDirectAudio - ret: %d",
-                        enableSetPushDirectAudio);
+                        bool(enableSetPushDirectAudio));
 
     if(enableSetPushDirectAudio) {
         auto rtcEngine = reinterpret_cast<rtc::IRtcEngine *>(engineHandle);

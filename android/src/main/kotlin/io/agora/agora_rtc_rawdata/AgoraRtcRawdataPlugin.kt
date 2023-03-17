@@ -40,6 +40,7 @@ class AgoraRtcRawdataPlugin : FlutterPlugin, MethodCallHandler {
       }
       "setPushDirectAudioEnable" -> {
         enableSetPushDirectAudio = call.arguments as Boolean
+        audioObserver?.setEnableSetPushDirectAudio(enableSetPushDirectAudio);
         result.success(null)
 
         Log.v("Peter", "setPushDirectAudioEnable: " + enableSetPushDirectAudio)
@@ -48,7 +49,6 @@ class AgoraRtcRawdataPlugin : FlutterPlugin, MethodCallHandler {
         Log.v("Peter", "registerAudioFrameObserver")
 
         if (audioObserver == null) {
-
           audioObserver = object : IAudioFrameObserver((call.arguments as Number).toLong(),
           enableSetPushDirectAudio, channel) {
             override fun onRecordAudioFrame(audioFrame: AudioFrame): Boolean {

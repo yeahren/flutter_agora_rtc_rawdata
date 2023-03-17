@@ -2,6 +2,13 @@
 #include "VideoFrameObserver.h"
 #include <jni.h>
 
+extern "C" JNIEXPORT void JNICALL
+Java_io_agora_rtc_rawdata_base_IAudioFrameObserver_nativeSetEnableSetPushDirectAudio(
+        JNIEnv *env, jobject, jlong nativeHandle, jboolean enableSetPushDirectAudio) {
+    auto observer = reinterpret_cast<agora::AudioFrameObserver *>(nativeHandle);
+    observer->setEnableSetPushDirectAudio(enableSetPushDirectAudio);
+}
+
 extern "C" JNIEXPORT jlong JNICALL
 Java_io_agora_rtc_rawdata_base_IAudioFrameObserver_nativeRegisterAudioFrameObserver(
     JNIEnv *env, jobject jCaller, jlong engineHandle, jboolean enableSetPushDirectAudio) {

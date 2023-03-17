@@ -46,6 +46,15 @@ public abstract class IAudioFrameObserver {
     }
   }
 
+  public void setEnableSetPushDirectAudio(boolean enableSetPushDirectAudio) {
+    if (nativeHandle != 0) {
+      nativeSetEnableSetPushDirectAudio(nativeHandle, enableSetPushDirectAudio);
+    }
+  }
+
+  private native void nativeSetEnableSetPushDirectAudio(long engineHandle,
+                                                        boolean enableSetPushDirectAudio);
+
   private native long nativeRegisterAudioFrameObserver(long engineHandle,
                                                        boolean enableSetPushDirectAudio);
 

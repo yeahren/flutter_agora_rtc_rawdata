@@ -73,9 +73,9 @@ class _MyAppState extends State<MyApp> {
       startPreview = true;
     });
 
-    await RawData.AgoraRtcRawdata.setPushDirectAudioEnable(true);
-    final ret = await RawData.AgoraRtcRawdata.getPushDirectAudioEnable();
-    assert(ret == true);
+    // await RawData.AgoraRtcRawdata.setPushDirectAudioEnable(true);
+    // final ret = await RawData.AgoraRtcRawdata.getPushDirectAudioEnable();
+    // assert(ret == true);
 
     // await AgoraRtcRawdata.setPushDirectAudioEnable(false);
     // ret = await AgoraRtcRawdata.getPushDirectAudioEnable();
@@ -105,6 +105,8 @@ class _MyAppState extends State<MyApp> {
     );
 
     RawData.AgoraRtcRawdata.hookAudioFrameObserver(observer);
+
+    await RawData.AgoraRtcRawdata.setPushDirectAudioEnable(true);
   }
 
   _deinitEngine() async {

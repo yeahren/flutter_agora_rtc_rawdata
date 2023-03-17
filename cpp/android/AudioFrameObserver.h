@@ -11,6 +11,8 @@ public:
   AudioFrameObserver(JNIEnv *env, jobject jCaller, long long engineHandle, bool enableSetPushDirectAudio);
   virtual ~AudioFrameObserver();
 
+  void setEnableSetPushDirectAudio(bool enable);
+
 public:
     bool onRecordAudioFrame(const char* channelId, AudioFrame& audioFrame) override;
     bool onPlaybackAudioFrame(const char* channelId, AudioFrame& audioFrame) override;
@@ -41,6 +43,8 @@ private:
   jmethodID jAudioFrameInit;
 
   long long engineHandle;
-  bool enableSetPushDirectAudio;
+
+public:
+  std::atomic<bool> enableSetPushDirectAudio;
 };
 } // namespace agora
