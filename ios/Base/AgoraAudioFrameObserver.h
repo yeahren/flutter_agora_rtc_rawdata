@@ -41,6 +41,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)registerAudioFrameObserver;
 
 - (void)unregisterAudioFrameObserver;
+
+- (void)setEnableSetPushDirectAudio:(bool)enable;
+
 @end
 
 NS_ASSUME_NONNULL_END

@@ -70,9 +70,9 @@ void AudioFrameObserver::setEnableSetPushDirectAudio(bool enable) {
 }
 
 bool AudioFrameObserver::onRecordAudioFrame(const char* channelId, AudioFrame& audioFrame) {
-    __android_log_print(ANDROID_LOG_INFO, "Peter",
-                        "onRecordAudioFrame - enableSetPushDirectAudio - ret: %d",
-                        bool(enableSetPushDirectAudio));
+//    __android_log_print(ANDROID_LOG_INFO, "Peter",
+//                        "onRecordAudioFrame - enableSetPushDirectAudio - ret: %d",
+//                        bool(enableSetPushDirectAudio));
 
     if(enableSetPushDirectAudio) {
         auto rtcEngine = reinterpret_cast<rtc::IRtcEngine *>(engineHandle);
@@ -81,7 +81,7 @@ bool AudioFrameObserver::onRecordAudioFrame(const char* channelId, AudioFrame& a
             mediaEngine.queryInterface(rtcEngine, agora::rtc::AGORA_IID_MEDIA_ENGINE);
             if (mediaEngine) {
                 auto ret = mediaEngine->pushDirectAudioFrame(&audioFrame);
-                __android_log_print(ANDROID_LOG_INFO, "Peter", "mediaEngine->pushDirectAudioFrame - ret: %d", ret);
+                //__android_log_print(ANDROID_LOG_INFO, "Peter", "mediaEngine->pushDirectAudioFrame - ret: %d", ret);
             }
         }
     }

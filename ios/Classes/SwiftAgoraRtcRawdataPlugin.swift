@@ -21,6 +21,7 @@ public class SwiftAgoraRtcRawdataPlugin: NSObject, FlutterPlugin, AgoraAudioFram
             result(enableSetPushDirectAudio)
         case "setPushDirectAudioEnable":
             enableSetPushDirectAudio = call.arguments as! Bool
+            audioObserver?.enableSetPushDirectAudio = enableSetPushDirectAudio
             result(nil)
         case "registerAudioFrameObserver":
             if audioObserver == nil {
@@ -56,7 +57,7 @@ public class SwiftAgoraRtcRawdataPlugin: NSObject, FlutterPlugin, AgoraAudioFram
     }
 
     public func onRecord(_ frame: AgoraAudioFrame) -> Bool {
-        NSLog("Peter onRecordAudioFrame 33333 " + String(enableSetPushDirectAudio))
+        //NSLog("Peter onRecordAudioFrame 33333 " + String(enableSetPushDirectAudio))
         
         var data = Data(bytes: frame.buffer, count:(Int)(frame.samples * frame.bytesPerSample * frame.channels));
 

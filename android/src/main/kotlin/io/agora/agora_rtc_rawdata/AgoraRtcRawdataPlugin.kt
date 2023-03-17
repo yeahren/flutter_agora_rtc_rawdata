@@ -35,7 +35,7 @@ class AgoraRtcRawdataPlugin : FlutterPlugin, MethodCallHandler {
   override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
     when (call.method) {
       "getPushDirectAudioEnable" -> {
-        Log.v("Peter", "getPushDirectAudioEnable")
+        //Log.v("Peter", "getPushDirectAudioEnable")
         result.success(enableSetPushDirectAudio)
       }
       "setPushDirectAudioEnable" -> {
@@ -43,10 +43,10 @@ class AgoraRtcRawdataPlugin : FlutterPlugin, MethodCallHandler {
         audioObserver?.setEnableSetPushDirectAudio(enableSetPushDirectAudio);
         result.success(null)
 
-        Log.v("Peter", "setPushDirectAudioEnable: " + enableSetPushDirectAudio)
+        //Log.v("Peter", "setPushDirectAudioEnable: " + enableSetPushDirectAudio)
       }
       "registerAudioFrameObserver" -> {
-        Log.v("Peter", "registerAudioFrameObserver")
+        //Log.v("Peter", "registerAudioFrameObserver")
 
         if (audioObserver == null) {
           audioObserver = object : IAudioFrameObserver((call.arguments as Number).toLong(),
@@ -70,17 +70,17 @@ class AgoraRtcRawdataPlugin : FlutterPlugin, MethodCallHandler {
             }
 
             override fun onPlaybackAudioFrame(audioFrame: AudioFrame): Boolean {
-              Log.v("Peter", "FUCKME FUCKME FUCKME onPlaybackAudioFrame")
+              //Log.v("Peter", "FUCKME FUCKME FUCKME onPlaybackAudioFrame")
               return true
             }
 
             override fun onMixedAudioFrame(audioFrame: AudioFrame): Boolean {
-              Log.v("Peter", "FUCKME FUCKME FUCKME onMixedAudioFrame")
+              //Log.v("Peter", "FUCKME FUCKME FUCKME onMixedAudioFrame")
               return true
             }
 
             override fun onPlaybackAudioFrameBeforeMixing(uid: Int, audioFrame: AudioFrame): Boolean {
-              Log.v("Peter", "FUCKME FUCKME FUCKME onPlaybackAudioFrameBeforeMixing")
+              //Log.v("Peter", "FUCKME FUCKME FUCKME onPlaybackAudioFrameBeforeMixing")
               return true
             }
           }
@@ -91,7 +91,7 @@ class AgoraRtcRawdataPlugin : FlutterPlugin, MethodCallHandler {
         result.success(null)
       }
       "unhookAudioFrameObserver" -> {
-        Log.v("Peter", "unhookAudioFrameObserver")
+        //Log.v("Peter", "unhookAudioFrameObserver")
         audioObserver?.let {
           it.unregisterAudioFrameObserver()
           audioObserver = null
@@ -100,7 +100,7 @@ class AgoraRtcRawdataPlugin : FlutterPlugin, MethodCallHandler {
       }
       ///////// VIDEO ///////
       "registerVideoFrameObserver" -> {
-        Log.v("Peter", "registerVideoFrameObserver")
+        //Log.v("Peter", "registerVideoFrameObserver")
         if (videoObserver == null) {
           videoObserver = object : IVideoFrameObserver((call.arguments as Number).toLong()) {
             override fun onCaptureVideoFrame(videoFrame: VideoFrame): Boolean {

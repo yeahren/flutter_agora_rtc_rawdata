@@ -15,25 +15,35 @@ class AudioFrameObserver : public media::IAudioFrameObserver {
 public:
   AudioFrameObserver(long long engineHandle, void *observer, bool enableSetPushDirectAudio)
       : engineHandle(engineHandle), observer(observer), enableSetPushDirectAudio(enableSetPushDirectAudio) {
-    auto rtcEngine = reinterpret_cast<rtc::IRtcEngine *>(engineHandle);
-    if (rtcEngine) {
-      util::AutoPtr<media::IMediaEngine> mediaEngine;
-      mediaEngine.queryInterface(rtcEngine, agora::rtc::AGORA_IID_MEDIA_ENGINE);
-      if (mediaEngine) {
-        mediaEngine->registerAudioFrameObserver(this);
-      }
-    }
+
   }
+    
+    void registerAudioFrameObserver() {
+        auto rtcEngine = reinterpret_cast<rtc::IRtcEngine *>(engineHandle);
+        if (rtcEngine) {
+          util::AutoPtr<media::IMediaEngine> mediaEngine;
+          mediaEngine.queryInterface(rtcEngine, agora::rtc::AGORA_IID_MEDIA_ENGINE);
+          if (mediaEngine) {
+              mediaEngine->registerAudioFrameObserver(this);
+              mediaEngine->setDirectExternalAudioSource(true);
+          }
+        }
+    }
+    
+    void unregisterAudioFrameOserver() {
+        auto rtcEngine = reinterpret_cast<rtc::IRtcEngine *>(engineHandle);
+        if (rtcEngine) {
+          util::AutoPtr<media::IMediaEngine> mediaEngine;
+          mediaEngine.queryInterface(rtcEngine, agora::rtc::AGORA_IID_MEDIA_ENGINE);
+          if (mediaEngine) {
+              mediaEngine->registerAudioFrameObserver(nullptr);
+              mediaEngine->setDirectExternalAudioSource(false);
+          }
+        }
+    }
 
   virtual ~AudioFrameObserver() {
-    auto rtcEngine = reinterpret_cast<rtc::IRtcEngine *>(engineHandle);
-    if (rtcEngine) {
-      util::AutoPtr<media::IMediaEngine> mediaEngine;
-      mediaEngine.queryInterface(rtcEngine, agora::rtc::AGORA_IID_MEDIA_ENGINE);
-      if (mediaEngine) {
-        mediaEngine->registerAudioFrameObserver(nullptr);
-      }
-    }
+      unregisterAudioFrameOserver();
   }
 
 public:
@@ -44,6 +54,8 @@ public:
       AgoraAudioFrameObserver *observerApple =
           (__bridge AgoraAudioFrameObserver *)observer;
         
+        NSLog(@"%s: %s: %d", "Peter", "onRecordAudioFrame - enableSetPushDirectAudio", bool(enableSetPushDirectAudio));
+        
         //--For Fucking Chorus Support--
         if(enableSetPushDirectAudio) {
             auto rtcEngine = reinterpret_cast<rtc::IRtcEngine *>(engineHandle);
@@ -52,7 +64,8 @@ public:
               util::AutoPtr<media::IMediaEngine> mediaEngine;
               mediaEngine.queryInterface(rtcEngine, agora::rtc::AGORA_IID_MEDIA_ENGINE);
               if (mediaEngine) {
-                  mediaEngine->pushDirectAudioFrame(&audioFrame);
+                  auto ret = mediaEngine->pushDirectAudioFrame(&audioFrame);
+                  NSLog(@"%s: %s: %d", "Peter", "mediaEngine->pushDirectAudioFram", ret);
               }
             }
         }
@@ -158,7 +171,7 @@ private:
   void *observer;
   long long engineHandle;
 public:
-  bool enableSetPushDirectAudio = false;
+    std::atomic<bool> enableSetPushDirectAudio {false};
 };
 }
 
@@ -180,15 +193,26 @@ public:
     return [self initWithEngineHandle:engineHandle :false];
 }
 
+- (void)setEnableSetPushDirectAudio:(bool)enable {
+    if(_observer) {
+        _observer->enableSetPushDirectAudio = enable;
+    }
+    
+    _enableSetPushDirectAudio = enable;
+}
+
 - (void)registerAudioFrameObserver {
   if (!_observer) {
     _observer =
         new agora::AudioFrameObserver(_engineHandle, (__bridge void *)self, self.enableSetPushDirectAudio);
   }
+    
+    _observer->registerAudioFrameObserver();
 }
 
 - (void)unregisterAudioFrameObserver {
   if (_observer) {
+      _observer->unregisterAudioFrameOserver();
     delete _observer;
     _observer = nullptr;
   }
