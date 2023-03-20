@@ -49,6 +49,10 @@ namespace agora {
         jAudioFrameInit = nullptr;
     }
 
+    void AudioFrameObserver::setNativeHandler(long long engineHandle) {
+        this->engineHandle = engineHandle;
+    }
+
     void AudioFrameObserver::setEnableSetPushDirectAudio(bool enable) {
         this->enableSetPushDirectAudio = enable;
     }
@@ -76,16 +80,16 @@ namespace agora {
     }
 
     bool AudioFrameObserver::onRecordAudioFrame(const char *channelId, AudioFrame &audioFrame) {
-//    __android_log_print(ANDROID_LOG_INFO, "Peter",
-//                        "onRecordAudioFrame - enableSetPushDirectAudio - ret: %d",
-//                        bool(enableSetPushDirectAudio));
+    __android_log_print(ANDROID_LOG_INFO, "Peter",
+                        "onRecordAudioFrame - enableSetPushDirectAudio - ret: %d",
+                        bool(enableSetPushDirectAudio));
 
         if (enableSetPushDirectAudio) {
             auto rtcEngine = reinterpret_cast<rtc::IRtcEngine *>(engineHandle);
             if (rtcEngine && _mediaEngine) {
                 auto ret = _mediaEngine->pushDirectAudioFrame(&audioFrame);
-//                __android_log_print(ANDROID_LOG_INFO, "Peter",
-//                                    "mediaEngine->pushDirectAudioFrame - ret: %d", ret);
+                __android_log_print(ANDROID_LOG_INFO, "Peter",
+                                    "mediaEngine->pushDirectAudioFrame - ret: %d", ret);
             }
         }
         AttachThreadScoped ats(jvm);
@@ -141,6 +145,10 @@ namespace agora {
         return ret;
     }
 
+    bool AudioFrameObserver::onPublishAudioFrame(const char* channelId, AudioFrame& audioFrame) {
+        return true;
+    }
+
     jbyteArray AudioFrameObserver::NativeToJavaByteArray(JNIEnv *env,
                                                          AudioFrame &audioFrame) {
         int length =
@@ -187,6 +195,10 @@ namespace agora {
     }
 
     media::IAudioFrameObserverBase::AudioParams AudioFrameObserver::getEarMonitoringAudioParams() {
+        return media::IAudioFrameObserverBase::AudioParams();
+    }
+
+    media::IAudioFrameObserverBase::AudioParams AudioFrameObserver::getPublishAudioParams() {
         return media::IAudioFrameObserverBase::AudioParams();
     }
 

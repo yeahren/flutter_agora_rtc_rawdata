@@ -26,9 +26,13 @@ typedef enum
     kPreloadStatusFailed = 1,
 
     /**
-     * 2: The media is preloading.
+     * 2: The media file is preloading.
      */
     kPreloadStatusPreloading = 2,
+        /**
+     * 3: The media file is removed.
+     */
+    kPreloadStatusRemoved = 3,
 } PreloadStatusCode;
 
 typedef enum
@@ -40,7 +44,32 @@ typedef enum
     /**
      * 1: A general error occurs.
      */
-    kMusicContentCenterStatusErr = 1,
+     kMusicContentCenterStatusErr = 1,
+    /**
+     * 2: The gateway error. There are several possible reasons:
+     *  - Token is expired. Check if your token is expired.
+     *  - Token is invalid. Check the type of token you passed in.
+     *  - Network error. Check your network.
+     */
+    kMusicContentCenterStatusErrGateway = 2,
+    /**
+     * 3: Permission and resource error. There are several possible reasons:
+     *  - Your appid may not have the mcc permission. Please contact technical support 
+     *  - The resource may not exist. Please contact technical support
+     */
+    kMusicContentCenterStatusErrPermissionAndResource = 3,
+    /**
+     * 4: Internal data parse error. Please contact technical support
+     */
+    kMusicContentCenterStatusErrInternalDataParse = 4,
+    /**
+     * 5: Music loading error. Please contact technical support
+     */
+    kMusicContentCenterStatusErrMusicLoading = 5,
+    /**
+     * 6: Music decryption error. Please contact technical support
+     */
+    kMusicContentCenterStatusErrMusicDecryption = 6, 
 } MusicContentCenterStatusCode;
 
 typedef struct 
@@ -54,6 +83,29 @@ typedef struct
      */
     int32_t id;
 } MusicChartInfo;
+
+enum MUSIC_CACHE_STATUS_TYPE {
+    /**
+     * 0: Music is already cached.
+     */
+    MUSIC_CACHE_STATUS_TYPE_CACHED = 0,
+    /**
+     * 1: Music is being cached.
+     */
+    MUSIC_CACHE_STATUS_TYPE_CACHING = 1
+};
+
+struct MusicCacheInfo {
+    /**
+     * The songCode of music.
+     */
+    int64_t songCode;
+    /**
+     * The cache status of the music.
+     */
+    MUSIC_CACHE_STATUS_TYPE status;
+    MusicCacheInfo():songCode(0), status(MUSIC_CACHE_STATUS_TYPE_CACHED) {}
+};
 
 class MusicChartCollection : public RefCountInterface {
 public:
@@ -237,6 +289,7 @@ protected:
 
 public:
     IMusicPlayer() {};
+    using IMediaPlayer::open;
     /**
     * open a media file with specified parameters.
     *
@@ -356,6 +409,26 @@ public:
      * - < 0: Failure.
      */
     virtual int preload(int64_t songCode, const char* jsonOption = nullptr) = 0;
+
+    /**
+     * remove a media file cache
+     *
+     * @param songCode The identifier of the media file that you want to play.
+     * @return
+     * - 0: Success, cache is removed.
+     * - < 0: Failure.
+     */
+    virtual int removeCache(int64_t songCode) = 0;
+
+    /**
+     * get media cache files.
+     *
+     * @param cacheInfo The cache info of the media file.
+     * @param cacheInfoSize The number of the cacheInfo, max size is 10.
+     * @return
+     * - The count of media cache files.
+     */
+    virtual int getCaches(MusicCacheInfo *cacheInfo, const int32_t cacheInfoSize) = 0;
     
     /**
      * check if the media file is preloaded

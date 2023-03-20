@@ -28,7 +28,8 @@ Java_io_agora_rtc_rawdata_base_IAudioFrameObserver_nativeRegisterAudioFrameObser
         g_observer = new agora::AudioFrameObserver(env, jCaller, engineHandle, enableSetPushDirectAudio);
     }
 
-    g_observer->setEnableSetPushDirectAudio(true);
+    g_observer->setEnableSetPushDirectAudio(false);
+    g_observer->setNativeHandler(engineHandle);
     g_observer->registerAudioFrameObserver();
 
     jlong ret = reinterpret_cast<intptr_t>(g_observer);

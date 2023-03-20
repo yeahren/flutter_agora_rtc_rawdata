@@ -40,6 +40,11 @@ public:
     }
     
 public:
+    bool onPublishAudioFrame(const char* channelId,
+                             agora::media::IAudioFrameObserver::AudioFrame& audioFrame) override{
+        return true;
+    }
+    
     bool onRecordAudioFrame(const char* channelId, AudioFrame& audioFrame) override {
         @autoreleasepool {
             AgoraAudioFrame *audioFrameApple = NativeToAppleAudioFrame(audioFrame);
@@ -122,6 +127,11 @@ public:
     
     int getObservedAudioFramePosition() override {
         return 0;
+    }
+    
+    AudioParams getPublishAudioParams() override {
+        AudioParams audio_frame;
+        return audio_frame;
     }
     
     media::IAudioFrameObserverBase::AudioParams getPlaybackAudioParams() override {

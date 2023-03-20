@@ -16,17 +16,22 @@ public:
   void registerAudioFrameObserver();
   void unregisterAudioFrameObserver();
 
+  void setNativeHandler(long long engineHandle);
+
 public:
     bool onRecordAudioFrame(const char* channelId, AudioFrame& audioFrame) override;
     bool onPlaybackAudioFrame(const char* channelId, AudioFrame& audioFrame) override;
     bool onMixedAudioFrame(const char* channelId, AudioFrame& audioFrame) override;
-    bool onEarMonitoringAudioFrame(AudioFrame& audioFrame) override;
+    bool onEarMonitoringAudioFrame(AudioFrame& audioFrame) ;
     bool onPlaybackAudioFrameBeforeMixing(const char* channelId, rtc::uid_t uid, AudioFrame& audioFrame) override;
+    bool onPublishAudioFrame(const char* channelId, AudioFrame& audioFrame) override;
+
     int getObservedAudioFramePosition() override;
     AudioParams getPlaybackAudioParams() override;
     AudioParams getRecordAudioParams() override;
     AudioParams getMixedAudioParams() override;
-    AudioParams getEarMonitoringAudioParams() override;
+    AudioParams getEarMonitoringAudioParams();
+    AudioParams getPublishAudioParams() override;
 
 private:
   jbyteArray NativeToJavaByteArray(JNIEnv *env, AudioFrame &audioFrame);
