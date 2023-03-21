@@ -130,8 +130,7 @@ public:
     }
     
     AudioParams getPublishAudioParams() override {
-        AudioParams audio_frame;
-        return audio_frame;
+        return media::IAudioFrameObserverBase::AudioParams();
     }
     
     media::IAudioFrameObserverBase::AudioParams getPlaybackAudioParams() override {
