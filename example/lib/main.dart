@@ -95,7 +95,7 @@ class _MyAppState extends State<MyApp> {
         mode: RawAudioFrameOpModeType.rawAudioFrameOpModeReadOnly,
         samplesPerCall: 960);
 
-    for (var i = 0; i < 100; ++i) {
+    for (var i = 0; i < 20; ++i) {
       debugPrint('Peter-Peter-Peter $i');
       var handle = await engine.getNativeHandle();
       await RawData.AgoraRtcRawdata.registerAudioFrameObserver(handle);
@@ -103,7 +103,7 @@ class _MyAppState extends State<MyApp> {
       RawData.AudioFrameObserver observer = RawData.AudioFrameObserver(
         onRecordAudioFrame: (channelId, audioFrame) async {
           debugPrint(
-              '[onRecordAudioFrame] channelId: $channelId, audioFrame:$audioFrame');
+              '[onRecordAudioFrame] channelId111: $channelId, audioFrame:$audioFrame');
         },
       );
 
@@ -119,6 +119,32 @@ class _MyAppState extends State<MyApp> {
 
       await RawData.AgoraRtcRawdata.unregisterAudioFrameObserver();
       RawData.AgoraRtcRawdata.unhookAudioFrameObserver();
+    }
+
+    for (var i = 0; i < 20; ++i) {
+      debugPrint('Peter-Peter-Peter $i');
+      var handle = await engine.getNativeHandle();
+      await RawData.AgoraRtcRawdata.registerAudioFrameObserver(handle);
+
+      RawData.AudioFrameObserver observer = RawData.AudioFrameObserver(
+        onRecordAudioFrame: (channelId, audioFrame) async {
+          debugPrint(
+              '[onRecordAudioFrame] channelId222: $channelId, audioFrame:$audioFrame');
+        },
+      );
+
+      RawData.AgoraRtcRawdata.hookAudioFrameObserver(observer);
+
+      await RawData.AgoraRtcRawdata.setPushDirectAudioEnable(true);
+
+      sleep(Duration(seconds: 1));
+
+      await RawData.AgoraRtcRawdata.setPushDirectAudioEnable(false);
+
+      sleep(Duration(seconds: 1));
+
+      await RawData.AgoraRtcRawdata.unregisterAudioFrameObserver();
+      //RawData.AgoraRtcRawdata.unhookAudioFrameObserver();
     }
   }
 

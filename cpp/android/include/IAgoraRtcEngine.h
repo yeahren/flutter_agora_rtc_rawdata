@@ -7362,9 +7362,15 @@ class IRtcEngine : public agora::base::IEngineBase {
   virtual int enableWirelessAccelerate(bool enabled) = 0;
 
   /**
+   * @deprecated use getNtpWallTimeInMs instead
    * Return current NTP(Network Time Protocol) time in milliseconds.
    */
   virtual long getNtpTimeInMs() = 0;
+
+  /**
+   * Return current NTP(unix timestamp) time in milliseconds.
+   */
+  virtual uint64_t getNtpWallTimeInMs() = 0;
 };
 
 class AAudioDeviceManager : public agora::util::AutoPtr<IAudioDeviceManager> {

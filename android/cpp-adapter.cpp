@@ -47,6 +47,7 @@ Java_io_agora_rtc_rawdata_base_IAudioFrameObserver_nativeUnregisterAudioFrameObs
     if(g_observer) {
         g_observer->setEnableSetPushDirectAudio(false);
         g_observer->unregisterAudioFrameObserver();
+        g_observer->setNativeHandler(0);
     }
 
     mtx.unlock();

@@ -28,7 +28,7 @@ public class SwiftAgoraRtcRawdataPlugin: NSObject, FlutterPlugin, AgoraAudioFram
                 audioObserver = AgoraAudioFrameObserver(engineHandle: call.arguments as! UInt, enableSetPushDirectAudio)
             }
             audioObserver?.enableSetPushDirectAudio = false;
-            audioObserver?.engineHandle = (call.arguments as! UInt)
+            audioObserver?.engineHandler = (call.arguments as! UInt)
             audioObserver?.delegate = self
             audioObserver?.register()
             result(nil)
@@ -36,6 +36,7 @@ public class SwiftAgoraRtcRawdataPlugin: NSObject, FlutterPlugin, AgoraAudioFram
             if audioObserver != nil {
                 audioObserver?.delegate = nil
                 audioObserver?.unregisterAudioFrameObserver()
+                audioObserver?.engineHandler = 0
             }
             result(nil)
         case "registerVideoFrameObserver":
