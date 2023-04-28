@@ -171,7 +171,22 @@ private:
         audioFrameApple.avsync_type = audioFrame.avsync_type;
         return audioFrameApple;
     }
-
+public:
+    void setEngineHandler(long long enginehandle) {
+        if(this->engineHandle != enginehandle) {
+            this->engineHandle = enginehandle;
+            
+            if(enginehandle) {
+                auto rtcEngine = reinterpret_cast<rtc::IRtcEngine *>(this->engineHandle);
+                _mediaEngine.queryInterface(rtcEngine,
+                                            agora::rtc::AGORA_IID_MEDIA_ENGINE);
+            }
+        }
+    }
+    
+    long long getEngineHandler() {
+        return engineHandle;
+    }
 private:
     void *observer;
     long long engineHandle;
@@ -186,6 +201,7 @@ public:
 @end
 
 @implementation AgoraAudioFrameObserver
+@synthesize engineHandler = _engineHandler;
 
 - (instancetype)initWithEngineHandle:(NSUInteger)engineHandle :(bool)enableSetPushDirectAudio {
     if (self = [super init]) {
@@ -210,7 +226,7 @@ public:
 - (void)registerAudioFrameObserver {
     if (!_observer) {
         _observer =
-        new agora::AudioFrameObserver(_engineHandler, (__bridge void *)self, self.enableSetPushDirectAudio);
+        new agora::AudioFrameObserver(self.engineHandler, (__bridge void *)self, self.enableSetPushDirectAudio);
     }
 
     _observer->registerAudioFrameObserver();
@@ -220,6 +236,18 @@ public:
     if (_observer) {
         _observer->unregisterAudioFrameOserver();
     }
+}
+
+- (void)setEngineHandler:(NSUInteger)engineHandler {
+    if (_observer) {
+        _observer->setEngineHandler(engineHandler);
+    }
+    
+    _engineHandler = engineHandler;
+}
+
+- (NSUInteger)engineHandler {
+    return _engineHandler;
 }
 
 @end
