@@ -173,19 +173,7 @@ private:
     }
 public:
     void setEngineHandler(long long enginehandle) {
-        if(this->engineHandle != enginehandle) {
-            this->engineHandle = enginehandle;
-            
-            if(enginehandle) {
-                auto rtcEngine = reinterpret_cast<rtc::IRtcEngine *>(this->engineHandle);
-                _mediaEngine.queryInterface(rtcEngine,
-                                            agora::rtc::AGORA_IID_MEDIA_ENGINE);
-            }
-        }
-    }
-    
-    long long getEngineHandler() {
-        return engineHandle;
+		this->engineHandle = enginehandle;
     }
 private:
     void *observer;

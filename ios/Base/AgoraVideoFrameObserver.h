@@ -35,9 +35,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)initWithEngineHandle:(NSUInteger)engineHandle;
 
-- (void)registerVideoFrameObserver;
+- (void)registerVideoFrameObserver NS_SWIFT_NAME(registerVideoFrameObserver());
 
-- (void)unregisterVideoFrameObserver;
+- (void)unregisterVideoFrameObserver NS_SWIFT_NAME(unregisterVideoFrameObserver());
 @end
 
 NS_ASSUME_NONNULL_END
