@@ -16,7 +16,7 @@ dependencies:
   agora_rtc_engine:
     git:
       url: https://github.com/AgoraIO/Agora-Flutter-SDK.git
-      ref: 6.0.0-sp.4001333.b.2
+      ref: 6.0.0-sp.4001333.b.3
 
 dev_dependencies:
   flutter_test:
